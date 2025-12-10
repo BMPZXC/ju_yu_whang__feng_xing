@@ -1,0 +1,715 @@
+[gd_scene load_steps=15 format=3 uid="uid://d4igy1umdludf"]
+
+[ext_resource type="Script" uid="uid://bgp4yp1a4andt" path="res://Node.cs" id="1_0fbet"]
+[ext_resource type="Script" uid="uid://dp0d6irgraya5" path="res://Receiver.cs" id="2_62e2m"]
+[ext_resource type="StyleBox" uid="uid://bvvnayuid4tok" path="res://new_style_box_flat_1.tres" id="3_kbped"]
+[ext_resource type="StyleBox" uid="uid://btic0vrxchgd4" path="res://new_style_box_flat.tres" id="3_qtu10"]
+[ext_resource type="Texture2D" uid="uid://02a8rnsnnys1" path="res://刷新.png" id="4_ee4bf"]
+
+[sub_resource type="GDScript" id="GDScript_kbped"]
+script/source = "extends Control
+@onready var 服务器: Node = $服务器
+@onready var 二维码: Node = $二维码
+var mosi=0
+var r:bool=false
+@onready var texture_rect_2: TextureRect = $Control/Control/Control/TextureRect2
+func _ready() -> void:
+	_request_permissions()
+	erweima(服务器.ip,texture_rect_2)
+	erweima(\"%s%d\" % [服务器.ip, 服务器.version])
+	r=true
+	suaxing()
+	
+
+func _request_permissions():
+	if OS.has_feature(\"android\"):
+		# 确保权限已授予
+		OS.request_permission(\"android.permission.WRITE_EXTERNAL_STORAGE\")
+		OS.request_permission(\"android.permission.READ_EXTERNAL_STORAGE\")
+		OS.request_permission(\"android.permission.INTERNET\")
+			
+		# Android 11+需要额外权限
+		if Engine.get_version_info().major >= 4 and Engine.get_version_info().minor >= 2:
+			OS.request_permission(\"android.permission.ACCESS_MEDIA_LOCATION\")
+
+func _on_animation_player_mosi(a:int) -> void:
+	mosi=a
+	suaxing()
+
+	
+@onready var control: Control = $Control/Control/Control
+@onready var button: Button = $Control/Button
+@onready var texture_rect: TextureRect = $Control/Control/Control/TextureRect
+@onready var label: Label = $Control/Control/Label
+
+func suaxing():
+	if !r:return
+	match mosi:
+		1:
+			button.text=服务器.Fx.get_file()
+			label.text=\"%s%d\" % [服务器.ip, 服务器.version]
+			if button.text==\"\":
+				button.text=\"选择文件\"
+				control.visible=false
+				return
+			control.visible=true
+			if texture_rect.visible:
+				erweima(label.text)
+			else :
+				texture_rect.visible=true
+		2:
+			label.text=服务器.ip
+			button.text=服务器.Up.get_file()
+			if button.text==\"\":
+				button.text=\"选择文件\"
+				control.visible=false
+				return
+			control.visible=true
+			texture_rect.visible=false
+
+func erweima(a:String,texture:TextureRect=texture_rect):
+	print(a)
+	var image_data: PackedByteArray = 二维码.GenerateQRCodeBytes(a)
+	var img = Image.new()
+	if img.load_png_from_buffer(image_data) == OK:
+		texture.texture = ImageTexture.create_from_image(img)
+"
+
+[sub_resource type="GDScript" id="GDScript_62e2m"]
+script/source = "extends Button
+
+@onready var control_2: Control = $\"../..\"
+@onready var 服务器: Node = $\"../../服务器\"
+func _ready() -> void:
+	grab_focus()
+
+func _pressed() -> void:
+	match control_2.mosi:
+		1:
+			if OS.has_feature(\"android\"):
+				if not OS.request_permission(\"android.permission.MANAGE_EXTERNAL_STORAGE\"):
+					pass
+				if not OS.request_permission(\"android.permission.READ_MEDIA_VISUAL_USER_SELECTED\"):
+					pass
+				if not OS.request_permission(\"android.permission.READ_MEDIA_AUDIO\"):
+					pass
+				if not OS.request_permission(\"android.permission.READ_MEDIA_IMAGES\"):
+					pass
+				if not OS.request_permission(\"android.permission.READ_MEDIA_VIDEO\"):
+					pass
+			$FileDialog.current_path=服务器.Fx
+			$FileDialog.popup_centered()
+		2:
+			$FileDialog2.current_path=服务器.Up
+			$FileDialog2.popup_centered()
+func _on_file_dialog_file_selected(path: String) -> void:
+	match control_2.mosi:
+		1:
+			服务器.Fx=path
+		2:
+			服务器.Up=path
+	control_2.suaxing()
+"
+
+[sub_resource type="GDScript" id="GDScript_ee4bf"]
+script/source = "extends Button
+@onready var label: Label = $\"../Label\"
+func _pressed() -> void:
+	DisplayServer.clipboard_set(label.text)
+"
+
+[sub_resource type="GDScript" id="GDScript_qtu10"]
+script/source = "extends Button
+var a=preload(\"res://关于.tscn\")
+@onready var control_2: Control = $\"../..\"
+
+func _pressed() -> void:
+	control_2.add_child(a.instantiate())
+	
+"
+
+[sub_resource type="GDScript" id="GDScript_iy58a"]
+script/source = "extends Button
+func _pressed() -> void:
+	get_tree().change_scene_to_file(\"res://control.tscn\")
+"
+
+[sub_resource type="Animation" id="Animation_iy58a"]
+resource_name = "1"
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Button:theme_override_styles/normal:bg_color:r")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.905882, -0.25, 0, 0.25, 0, 0.407843, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Button:theme_override_styles/normal:bg_color:g")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.847059, -0.25, 0, 0.25, 0, 0.584314, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Button:theme_override_styles/normal:bg_color:b")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.494118, -0.25, 0, 0.25, 0, 0.85098, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Button:theme_override_styles/normal:bg_color:a")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(1, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Button2:theme_override_styles/normal:bg_color:r")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.407843, -0.25, 0, 0.25, 0, 0.905882, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Button2:theme_override_styles/normal:bg_color:g")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.584314, -0.25, 0, 0.25, 0, 0.847059, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Button2:theme_override_styles/normal:bg_color:b")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0.85098, -0.25, 0, 0.25, 0, 0.494118, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/7/type = "bezier"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Button2:theme_override_styles/normal:bg_color:a")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(1, -0.25, 0, 0.25, 0, 1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/8/type = "bezier"
+tracks/8/imported = false
+tracks/8/enabled = true
+tracks/8/path = NodePath("Button2:position:x")
+tracks/8/interp = 1
+tracks/8/loop_wrap = true
+tracks/8/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(45, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/9/type = "bezier"
+tracks/9/imported = false
+tracks/9/enabled = true
+tracks/9/path = NodePath("Button2:position:y")
+tracks/9/interp = 1
+tracks/9/loop_wrap = true
+tracks/9/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(129.5, -0.25, 0, 0.25, 0, 129.5, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/10/type = "bezier"
+tracks/10/imported = false
+tracks/10/enabled = true
+tracks/10/path = NodePath("Button:position:x")
+tracks/10/interp = 1
+tracks/10/loop_wrap = true
+tracks/10/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 48, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+tracks/11/type = "bezier"
+tracks/11/imported = false
+tracks/11/enabled = true
+tracks/11/path = NodePath("Button:position:y")
+tracks/11/interp = 1
+tracks/11/loop_wrap = true
+tracks/11/keys = {
+"handle_modes": PackedInt32Array(0, 0),
+"points": PackedFloat32Array(0, -0.25, 0, 0.25, 0, 0, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0, 1)
+}
+
+[sub_resource type="Animation" id="Animation_6a6wx"]
+length = 0.001
+tracks/0/type = "bezier"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Button:theme_override_styles/normal:bg_color:r")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.905882, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/1/type = "bezier"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Button:theme_override_styles/normal:bg_color:g")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.847059, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/2/type = "bezier"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("Button:theme_override_styles/normal:bg_color:b")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.494118, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/3/type = "bezier"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("Button:theme_override_styles/normal:bg_color:a")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/4/type = "bezier"
+tracks/4/imported = false
+tracks/4/enabled = true
+tracks/4/path = NodePath("Button2:theme_override_styles/normal:bg_color:r")
+tracks/4/interp = 1
+tracks/4/loop_wrap = true
+tracks/4/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.407843, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/5/type = "bezier"
+tracks/5/imported = false
+tracks/5/enabled = true
+tracks/5/path = NodePath("Button2:theme_override_styles/normal:bg_color:g")
+tracks/5/interp = 1
+tracks/5/loop_wrap = true
+tracks/5/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.584314, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/6/type = "bezier"
+tracks/6/imported = false
+tracks/6/enabled = true
+tracks/6/path = NodePath("Button2:theme_override_styles/normal:bg_color:b")
+tracks/6/interp = 1
+tracks/6/loop_wrap = true
+tracks/6/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(0.85098, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+tracks/7/type = "bezier"
+tracks/7/imported = false
+tracks/7/enabled = true
+tracks/7/path = NodePath("Button2:theme_override_styles/normal:bg_color:a")
+tracks/7/interp = 1
+tracks/7/loop_wrap = true
+tracks/7/keys = {
+"handle_modes": PackedInt32Array(0),
+"points": PackedFloat32Array(1, -0.25, 0, 0.25, 0),
+"times": PackedFloat32Array(0)
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_sky72"]
+_data = {
+&"1": SubResource("Animation_iy58a"),
+&"RESET": SubResource("Animation_6a6wx")
+}
+
+[sub_resource type="GDScript" id="GDScript_fj5cn"]
+script/source = "extends AnimationPlayer
+signal mosi
+var jiesu=true
+var b:int=0
+@onready var 服务器: Node = $\"../../服务器\"
+
+func _ready() -> void:
+	b=int(服务器.Duqu(\"mosi\",\"a\"))
+	if b==0:
+		play_section(\"1\",0,0.1)
+	else :
+		play_section(\"1\",0.9,1)
+	mosi.emit(b+1)
+func qie():
+	if not jiesu:return
+	jiesu=false
+	if b==0:
+		play(\"1\")
+	else :
+		play_backwards(\"1\")
+	b=(b+1)%2
+	服务器.Sezi(\"mosi\",\"a\",str(b))
+	var a=b+1
+	mosi.emit(a)
+	await animation_finished
+	jiesu=true
+	
+"
+
+[node name="Control2" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_kbped")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.560784, 0.65098, 0.870588, 1)
+
+[node name="Label2" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -160.0
+offset_right = 160.0
+offset_bottom = 88.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 64
+text = "局域网分享"
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.55
+anchor_right = 0.5
+anchor_bottom = 0.55
+offset_left = -360.0
+offset_top = -396.0
+offset_right = 360.0
+offset_bottom = 324.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="Control"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -55.0
+offset_right = 57.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "请用 浏览器 扫描"
+
+[node name="Button" type="Button" parent="Control"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -151.0
+offset_top = 100.0
+offset_right = 151.0
+offset_bottom = 173.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "选择文件"
+clip_text = true
+script = SubResource("GDScript_62e2m")
+
+[node name="FileDialog" type="FileDialog" parent="Control/Button"]
+title = "Open a File"
+position = Vector2i(0, 36)
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+use_native_dialog = true
+
+[node name="FileDialog2" type="FileDialog" parent="Control/Button"]
+title = "Open a Directory"
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+use_native_dialog = true
+
+[node name="Control" type="ColorRect" parent="Control"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.55
+anchor_right = 0.501
+anchor_bottom = 0.55
+offset_left = -189.0
+offset_top = -160.0
+offset_right = 190.28
+offset_bottom = 257.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.286275, 0.262745, 0.443137, 1)
+
+[node name="Control" type="Control" parent="Control/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect2" type="TextureRect" parent="Control/Control/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="TextureRect" type="TextureRect" parent="Control/Control/Control"]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+
+[node name="Button" type="Button" parent="Control/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_hover_pressed_color = Color(0.768627, 0.701961, 1, 0.152941)
+theme_override_colors/font_hover_color = Color(0.768627, 0.701961, 1, 0.152941)
+theme_override_colors/font_outline_color = Color(0.984314, 0.847059, 0.372549, 1)
+theme_override_colors/font_color = Color(0.77, 0.7, 1, 0.152941)
+theme_override_colors/font_focus_color = Color(0.768627, 0.701961, 1, 0.152941)
+theme_override_colors/font_pressed_color = Color(0.768627, 0.701961, 1, 0.152941)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 64
+text = "点击复制"
+flat = true
+script = SubResource("GDScript_ee4bf")
+
+[node name="Label" type="Label" parent="Control/Control"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -182.0
+offset_top = -40.0
+offset_right = 184.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.286275, 0.262745, 0.443137, 1)
+text = "http://192.168.0.251:51374/5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label3" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -85.0
+offset_top = -63.0
+offset_right = -20.0
+offset_bottom = -15.0
+grow_horizontal = 0
+grow_vertical = 0
+text = "关于"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Button" type="Button" parent="Label3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+flat = true
+script = SubResource("GDScript_qtu10")
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -46.0
+offset_right = 64.0
+offset_bottom = -15.0
+grow_vertical = 0
+text = "2.0"
+
+[node name="服务器" type="Node" parent="."]
+script = ExtResource("2_62e2m")
+
+[node name="二维码" type="Node" parent="."]
+script = ExtResource("1_0fbet")
+
+[node name="Control2" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -80.0
+offset_top = -136.0
+offset_bottom = 141.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="TextureButton" type="Button" parent="Control2"]
+layout_mode = 0
+offset_left = 21.0
+offset_top = -112.0
+offset_right = 61.0
+offset_bottom = -72.0
+flat = true
+script = SubResource("GDScript_iy58a")
+
+[node name="TextureRect" type="TextureRect" parent="Control2/TextureButton"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("4_ee4bf")
+expand_mode = 1
+
+[node name="Button" type="Button" parent="Control2"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -32.0
+offset_right = 96.0
+offset_bottom = 130.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 64
+theme_override_styles/hover = ExtResource("3_kbped")
+theme_override_styles/pressed = ExtResource("3_kbped")
+theme_override_styles/normal = ExtResource("3_kbped")
+alignment = 0
+
+[node name="Label" type="Label" parent="Control2/Button"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = -1.0
+offset_right = 6.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.988235, 0.984314, 0.952941, 1)
+theme_override_font_sizes/font_size = 64
+text = "分
+享"
+vertical_alignment = 1
+
+[node name="Button2" type="Button" parent="Control2"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -80.0
+offset_top = -147.5
+offset_right = 65.0
+offset_bottom = -17.5
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 64
+theme_override_styles/hover = ExtResource("3_qtu10")
+theme_override_styles/pressed = ExtResource("3_qtu10")
+theme_override_styles/normal = ExtResource("3_qtu10")
+alignment = 0
+
+[node name="Label" type="Label" parent="Control2/Button2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 6.0
+offset_top = -1.5
+offset_right = 6.0
+offset_bottom = 1.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.988235, 0.984314, 0.952941, 1)
+theme_override_font_sizes/font_size = 64
+text = "接
+收"
+vertical_alignment = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Control2"]
+libraries = {
+&"": SubResource("AnimationLibrary_sky72")
+}
+script = SubResource("GDScript_fj5cn")
+
+[connection signal="file_selected" from="Control/Button/FileDialog" to="Control/Button" method="_on_file_dialog_file_selected"]
+[connection signal="dir_selected" from="Control/Button/FileDialog2" to="Control/Button" method="_on_file_dialog_file_selected"]
+[connection signal="suaxing" from="服务器" to="." method="suaxing"]
+[connection signal="pressed" from="Control2/Button" to="Control2/AnimationPlayer" method="qie"]
+[connection signal="pressed" from="Control2/Button2" to="Control2/AnimationPlayer" method="qie"]
+[connection signal="mosi" from="Control2/AnimationPlayer" to="." method="_on_animation_player_mosi"]

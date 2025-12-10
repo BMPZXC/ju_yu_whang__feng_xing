@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>上传</title>
+    <style>
+      body {
+        font-family: Arial;
+        margin: 0
+      }
+
+      .btn {
+        display: inline-block;
+        padding: 8px 16px;
+        background: #409eff;
+        color: #fff;
+        border-radius: 4px;
+        cursor: pointer
+      }
+
+      .btn:hover {
+        background: #66b1ff
+      }
+
+      #fileInput {
+        display: none
+      }
+
+      .file-list {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin: 10px 0
+      }
+
+      .file-item {
+        background: #f5f5f5;
+        padding: 4px 8px;
+        border-radius: 4px
+      }
+
+      .progress-box {
+        display: none;
+        margin-top: 12px;
+        width: 300px
+      }
+
+      .bar {
+        height: 8px;
+        background: #e5e5e5;
+        border-radius: 4px;
+        overflow: hidden
+      }
+
+      .bar div {
+        height: 100%;
+        background: #67c23a;
+        width: 0%;
+        transition: width .2s
+      }
+
+      .percent {
+        margin-top: 4px;
+        font-size: 14px
+      }
+    </style>
+    <style>
+      .toast {
+        padding: 10px 14px;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 14px;
+        animation: fadeIn .3s, fadeOut .3s 2.7s forwards;
+      }
+
+      .toast.ok {
+        background: #67c23a;
+      }
+
+      .toast.err {
+        background: #f56c6c;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateX(100%)
+        }
+
+        to {
+          opacity: 1;
+          transform: translateX(0)
+        }
+      }
+
+      @keyframes fadeOut {
+        to {
+          opacity: 0;
+          transform: translateX(100%)
+        }
+      }
+    </style>
+    <style>
+      .boxsuoping {
+        position: fixed;
+
+        top: 0;
+        right: 0;
+        width: 100vw;
+        height: 100vh;
+        /* pointer-events: none; */
+      }
+
+      .boxxia {
+        display: flex;
+        flex-direction: column;
+        /* outline: 1px solid #000000; */
+        position: relative;
+        box-sizing: border-box;
+        align-items: center;
+      }
+
+      div {
+        box-sizing: border-box;
+      }
+
+      .boxzong {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="boxsuoping ">
+      <div id="toastBox" style="
+                        position:fixed;right:20px;top:20px;
+                        z-index:9999;
+                        display:flex;flex-direction:column;gap:8px;"></div>
+      <div id="zu" class="boxxia " style="width: 300px;height: 300px;">
+        <h1>
+          上传文件
+        </h1>
+        <!-- 轻提示容器 -->
+
+        <div style="display: flex;flex-direction: row;">
+          <label class="btn" for="fileInput">选择</label>
+          <input type="file" id="fileInput" multiple />
+          <button class="btn" id="uploadBtn" style="display:block;border: none;margin-left: 10px;">开始上传</button>
+        </div>
+
+        <div class="file-list" id="fileList"></div>
+
+        <div class="progress-box" id="progressBox">
+          <div class="bar">
+            <div id="progressBar"></div>
+          </div>
+          <div class="percent"><span id="percentText">0%</span></div>
+          <span id="speedText" style="margin-left:12px">0 KB/s</span> <!-- ★新增 -->
+        </div>
+      </div>
+
+    </div>
+    <script>
+      const fileInput = document.getElementById('fileInput');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const fileList = document.getElementById('fileList');
+      const progressBox = document.getElementById('progressBox');
+      const progressBar = document.getElementById('progressBar');
+      const percentText = document.getElementById('percentText');
+      const speedText = document.getElementById('speedText');       // ★新增
+
+      let selectedFiles = [];
+
+      fileInput.addEventListener('change', () => {
+        selectedFiles = [...fileInput.files];
+        fileList.innerHTML = '';
+        selectedFiles.forEach(f => {
+          const div = document.createElement('div');
+          div.className = 'file-item';
+          div.textContent = f.name;
+          fileList.appendChild(div);
+        });
+      });
+
+      uploadBtn.addEventListener('click', () => {
+        if (!selectedFiles.length) return;
+
+        const form = new FormData();
+        selectedFiles.forEach(f => form.append('files', f)); // 同一个字段名，多文件
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/up');          // 后端接口地址
+
+        // ★ 2. 记录上一次的时间和已上传量
+        let lastTime = performance.now();
+        let lastLoaded = 0;
+
+        xhr.upload.onprogress = e => {
+          if (!e.lengthComputable) return;
+
+          const now = performance.now();
+          const deltaTime = now - lastTime;            // ms
+          const deltaLoaded = e.loaded - lastLoaded;   // bytes
+
+          if (deltaTime > 200) {   // 每 200 ms 更新一次，避免抖动
+            const speedBps = deltaLoaded / deltaTime * 1000;   // bytes/s
+            speedText.textContent = formatSpeed(speedBps);     // ★显示速度
+            lastTime = now;
+            lastLoaded = e.loaded;
+          }
+
+          const percent = Math.round((e.loaded / e.total) * 100);
+          progressBar.style.width = percent + '%';
+          percentText.textContent = percent + '%';
+        };
+        xhr.onload = () => {
+          let data
+          try {
+            data = JSON.parse(xhr.responseText);
+          } catch (e) {
+            data = { error: xhr.status };
+          }
+          let errorMsg = data.error || data.message || data.err
+          if (errorMsg === 200 && xhr.status === 200) {
+            errorMsg = "上传成功"
+          }
+          toast(errorMsg, xhr.status);
+
+          progressBox.style.display = 'none';
+        };
+        xhr.onerror = () => {
+          alert('网络错误');
+          progressBox.style.display = 'none';
+        };
+
+        progressBar.style.width = '0%';
+        percentText.textContent = '0%';
+        speedText.textContent = '0 KB/s';
+        progressBox.style.display = 'block';
+        xhr.send(form);
+      });
+
+      // ★ 3. 把字节数转成可读单位
+      function formatSpeed(bps) {
+        if (bps < 1024) return bps.toFixed(1) + ' B/s';
+        if (bps < 1024 * 1024) return (bps / 1024).toFixed(1) + ' KB/s';
+        return (bps / 1024 / 1024).toFixed(1) + ' MB/s';
+      }
+
+      function toast(msg, type = 'ok') {
+        const box = document.getElementById('toastBox');
+        const el = document.createElement('div');
+        if (type === 'ok') {
+          el.className = 'toast ok';
+        } else {
+          el.className = 'toast err';
+        }
+        console.log(msg);
+        el.textContent = msg;
+        box.appendChild(el);
+        setTimeout(() => el.remove(), 3000); // 3 秒后自动移除
+      }
+    </script>
+    <script>
+      window.addEventListener('resize', suofang);
+      suofang(); // 页面加载时也执行一次
+      function suofang() {
+        let zu = document.getElementById("zu");
+        let p = zu.parentNode;
+        let a = p.clientWidth / zu.clientWidth;
+        let b = p.clientHeight / zu.clientHeight;
+        let scale = Math.min(a, b) * 0.9; // 缩放比例，最大90%
+        zu.style.transform = `scale(${scale})`;
+        zu.style.left = `${(p.clientWidth - zu.clientWidth * scale) / 2}px`;
+        zu.style.top = `${(p.clientHeight - zu.clientHeight * scale) / 4}px`;
+        zu.style.transformOrigin = '0 0';
+        let toastBox = document.getElementById("toastBox");
+        toastBox.style.transform = `scale(${scale})`;
+        toastBox.style.right = `${20 * scale}px`;
+        toastBox.style.top = `${20 * scale}px`;
+        toastBox.style.transformOrigin = "100%  0";
+
+      }
+    </script>
+  </body>
+
+</html>

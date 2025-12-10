@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下载</title>
+  </head>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* 隐藏整个页面的滚动条 */
+    ::-webkit-scrollbar {
+      display: none;
+      /* Chrome, Safari, Edge */
+    }
+
+    html {
+      scrollbar-width: none;
+      /* Firefox */
+      -ms-overflow-style: none;
+      /* IE/旧Edge */
+      overflow: hidden
+    }
+
+    a {
+      text-decoration: none;
+    }
+  </style>
+
+  <body>
+    <a id="zu" style="border-radius: 10px;background-color: rgb(172, 163, 231);color: rgb(224, 224, 255);
+    border-color: rgb(24, 15, 64);padding: 5px;
+    " download>下载</a>
+  </body>
+  <script>
+    let zu = document.getElementById("zu")
+    let scale = Math.sqrt((window.innerWidth ** 2 + window.innerHeight ** 2) / (zu.offsetHeight ** 2 + zu.offsetWidth ** 2)) * 0.3
+    zu.style.transform = `scale(${scale})`;
+    a()
+    async function a() {
+      let id = window.location.href.split('/').filter(Boolean).pop()
+      await fetch('/lujing/' + id).then(r => {
+        if (!r.ok) {
+          document.getElementById("zu").innerText = "链接失效"
+          return
+        }
+        r.json().then(r => {
+          zu.href = window.location.href + "/" + r.error
+        })
+        // console.log(r)
+        // zu.href = window.location.href + "/" + r.json().error
+      });
+    }
+
+  </script>
+
+</html>

@@ -1,0 +1,117 @@
+[gd_scene load_steps=3 format=3 uid="uid://be0orpsaig1r"]
+
+[sub_resource type="GDScript" id="GDScript_3ffm0"]
+script/source = "extends Control
+
+func _input(event: InputEvent) -> void:
+	if  event is InputEventMouseButton:
+		if event.button_index==MOUSE_BUTTON_LEFT:
+			queue_free()
+			pass
+		pass
+"
+
+[sub_resource type="GDScript" id="GDScript_c7cd3"]
+script/source = "@tool
+extends MarginContainer
+var r:Rect2
+@export var color:Color
+@export var suaxing:bool:
+	set(_a):
+		queue_redraw()
+
+func _draw() -> void:
+	if not r:
+		r=Rect2(Vector2(0.0,0.0),size)
+	draw_rect(r,color,false,2)
+	pass
+func _input(event: InputEvent) -> void:
+	if  event is InputEventMouseButton:
+		if event.button_index==MOUSE_BUTTON_LEFT:
+			var mouse_pos = get_global_mouse_position()
+			var a=Rect2(position,size)
+			if a.has_point(mouse_pos):
+				get_viewport().set_input_as_handled()
+			pass
+		pass
+"
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_3ffm0")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.4823, 0.646252, 0.91, 0.901961)
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -226.0
+offset_top = -290.5
+offset_right = 226.0
+offset_bottom = 290.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_right = 20
+script = SubResource("GDScript_c7cd3")
+color = Color(0.164706, 0.12549, 0.341176, 1)
+
+[node name="Control" type="Control" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="MarginContainer/Control"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -30.5
+offset_bottom = -12.5
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 16
+text = "点击空白处 [ 关闭 ]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label" type="Label" parent="MarginContainer/Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "一个操作简单的分享软件
+如需速度,请在路由器的局域网下
+
+作者:不明瓶中星尘
+QQ:2298803971
+
+
+能力有限,以下有待完善:
+软件体积较大
+如需传递安装包,
+请下载[MT管理器]
+
+后台不存活
+tv版未编译成功
+
+"
+horizontal_alignment = 1
+vertical_alignment = 1

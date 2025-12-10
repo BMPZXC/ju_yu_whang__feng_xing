@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
+  <assemblyIdentity 
+    version="1.0.0.0" 
+    name="MyGodotApp.exe" 
+    processorArchitecture="x86"
+  />
+  
+  <!-- 应用程序描述 -->
+  <description>My Godot Application</description>
+  
+  <!-- 信任信息 - 权限设置 -->
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm:v3">
+    <security>
+      <requestedPrivileges>
+        <!-- 权限级别选项：
+             asInvoker: 以调用者权限运行（推荐）
+             requireAdministrator: 需要管理员权限
+             highestAvailable: 最高可用权限 -->
+        <requestedExecutionLevel 
+          level="asInvoker" 
+          uiAccess="false"
+        />
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+  
+  <!-- 兼容性设置 -->
+  <compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
+    <application>
+      <!-- Windows 10 和 11 兼容性 -->
+      <supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}"/> <!-- Windows 10 -->
+      <supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}"/> <!-- Windows 11 -->
+    </application>
+  </compatibility>
+</assembly>

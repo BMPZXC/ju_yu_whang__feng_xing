@@ -1,0 +1,54 @@
+[gd_resource type="Theme" load_steps=6 format=3 uid="uid://chgyauhsf8e8r"]
+
+[ext_resource type="FontFile" uid="uid://c30qhexclcmcy" path="res://ShanHaiBoYaGuLiW-2.ttf" id="1_amlv4"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_amlv4"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.160784, 0.207843, 0.439216, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 1.0
+expand_margin_top = 1.0
+expand_margin_right = 1.0
+expand_margin_bottom = 1.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i7eh4"]
+bg_color = Color(0.215686, 0.501961, 0.768627, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_78ylj"]
+bg_color = Color(0.980392, 0.921569, 0.776471, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aggjg"]
+bg_color = Color(0.854902, 0.819608, 0.4, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[resource]
+default_font = ExtResource("1_amlv4")
+default_font_size = 30
+Button/colors/font_color = Color(0.529412, 0.678431, 0.854902, 1)
+Button/colors/font_focus_color = Color(0.529412, 0.678431, 0.854902, 1)
+Button/colors/font_hover_color = Color(0.992157, 0.980392, 0.835294, 1)
+Button/colors/font_hover_pressed_color = Color(0.992157, 0.980392, 0.835294, 1)
+Button/colors/font_pressed_color = Color(0.992157, 0.980392, 0.835294, 1)
+Button/styles/focus = SubResource("StyleBoxFlat_amlv4")
+Button/styles/hover = SubResource("StyleBoxFlat_i7eh4")
+Button/styles/normal = SubResource("StyleBoxFlat_78ylj")
+Button/styles/pressed = SubResource("StyleBoxFlat_aggjg")
+Label/colors/font_color = Color(0.995572, 0.850621, 0.772777, 1)
