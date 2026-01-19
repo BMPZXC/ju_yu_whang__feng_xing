@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://d4igy1umdludf"]
+[gd_scene load_steps=16 format=3 uid="uid://d4igy1umdludf"]
 
 [ext_resource type="Script" uid="uid://bgp4yp1a4andt" path="res://Node.cs" id="1_0fbet"]
 [ext_resource type="Script" uid="uid://dp0d6irgraya5" path="res://Receiver.cs" id="2_62e2m"]
@@ -111,6 +111,13 @@ func _on_file_dialog_file_selected(path: String) -> void:
 	control_2.suaxing()
 "
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kbped"]
+bg_color = Color(0.286275, 0.262745, 0.443137, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
 [sub_resource type="GDScript" id="GDScript_ee4bf"]
 script/source = "extends Button
 @onready var label: Label = $\"../Label\"
@@ -129,9 +136,12 @@ func _pressed() -> void:
 "
 
 [sub_resource type="GDScript" id="GDScript_iy58a"]
-script/source = "extends Button
+script/source = "extends TextureButton
+@onready var control_2: Control = $\"../..\"
+
 func _pressed() -> void:
-	get_tree().change_scene_to_file(\"res://control.tscn\")
+	%服务器.GetLanIPAddress()
+	control_2.suaxing()
 "
 
 [sub_resource type="Animation" id="Animation_iy58a"]
@@ -420,8 +430,9 @@ anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -160.0
+offset_top = 15.31
 offset_right = 160.0
-offset_bottom = 88.0
+offset_bottom = 103.31
 grow_horizontal = 2
 theme_override_font_sizes/font_size = 64
 text = "局域网分享"
@@ -484,9 +495,8 @@ file_mode = 2
 access = 2
 use_native_dialog = true
 
-[node name="Control" type="ColorRect" parent="Control"]
+[node name="Control" type="Control" parent="Control"]
 layout_mode = 1
-anchors_preset = -1
 anchor_left = 0.5
 anchor_top = 0.55
 anchor_right = 0.501
@@ -497,15 +507,16 @@ offset_right = 190.28
 offset_bottom = 257.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.286275, 0.262745, 0.443137, 1)
 
-[node name="Control" type="Control" parent="Control/Control"]
+[node name="Control" type="Panel" parent="Control/Control"]
+clip_children = 2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_kbped")
 
 [node name="TextureRect2" type="TextureRect" parent="Control/Control/Control"]
 layout_mode = 1
@@ -555,9 +566,10 @@ offset_top = -40.0
 offset_right = 184.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(0.286275, 0.262745, 0.443137, 1)
+theme_override_font_sizes/font_size = 16
 text = "http://192.168.0.251:51374/5"
 horizontal_alignment = 1
-vertical_alignment = 1
+vertical_alignment = 2
 
 [node name="Label3" type="Label" parent="."]
 layout_mode = 1
@@ -599,6 +611,7 @@ grow_vertical = 0
 text = "2.0"
 
 [node name="服务器" type="Node" parent="."]
+unique_name_in_owner = true
 script = ExtResource("2_62e2m")
 
 [node name="二维码" type="Node" parent="."]
@@ -617,21 +630,16 @@ offset_bottom = 141.0
 grow_horizontal = 0
 grow_vertical = 2
 
-[node name="TextureButton" type="Button" parent="Control2"]
+[node name="TextureButton" type="TextureButton" parent="Control2"]
 layout_mode = 0
 offset_left = 21.0
 offset_top = -112.0
 offset_right = 61.0
 offset_bottom = -72.0
-flat = true
+texture_normal = ExtResource("4_ee4bf")
+ignore_texture_size = true
+stretch_mode = 6
 script = SubResource("GDScript_iy58a")
-
-[node name="TextureRect" type="TextureRect" parent="Control2/TextureButton"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
-texture = ExtResource("4_ee4bf")
-expand_mode = 1
 
 [node name="Button" type="Button" parent="Control2"]
 layout_mode = 1

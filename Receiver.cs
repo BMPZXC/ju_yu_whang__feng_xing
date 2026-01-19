@@ -68,11 +68,11 @@ public partial class Receiver : Node
 		string va = Duqu("fx", "jisu").Trim();
 		version = string.IsNullOrEmpty(va) ? 0 : int.Parse(va);
 
-		string lanIP = GetLanIPAddress();
 		string port = Duqu("server", "port");
 		try
 		{
-			using var listener = new TcpListener(IPAddress.Parse(lanIP), int.Parse(port));
+			using var listener = new TcpListener(IPAddress.IPv6Any, int.Parse(port));
+			listener.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
 			listener.Start();
 			listener.Stop();
 		}
@@ -86,18 +86,19 @@ public partial class Receiver : Node
 			Sezi("server", "port", port);
 		}
 
-		ip = $"http://{lanIP}:{port}/";
+		GetLanIPAddress();
+
 
 		// 创建 EmbedIO 服务器
-		server = CreateWebServer(lanIP, int.Parse(port));
+		server = CreateWebServer(int.Parse(port));
 		cts = new CancellationTokenSource();
 
 		StartServer();
 	}
 
-	private WebServer CreateWebServer(string ip, int port)
+	private WebServer CreateWebServer(int port)
 	{
-		var url = $"http://{ip}:{port}/";
+		var url = $"http://+:{port}/";
 		var server = new WebServer(o => o
 						.WithUrlPrefix(url)
 						.WithMode(HttpListenerMode.EmbedIO))
@@ -405,15 +406,44 @@ public partial class Receiver : Node
 		listener.Stop();
 		return port;
 	}
-
-	private static string GetLanIPAddress()
+	private int GetLanIPAddress_1 = 0;
+	private void GetLanIPAddress()
 	{
-		return NetworkInterface.GetAllNetworkInterfaces()
+		// IPv4 私网三段
+		var ipv4Private = new[]
+		{
+				IPNetwork.Parse("10.0.0.0/8"),
+				IPNetwork.Parse("172.16.0.0/12"),
+				IPNetwork.Parse("192.168.0.0/16")
+		};
+
+		// IPv6 ULA 整段 fc00::/7
+		var ipv6Ula = IPNetwork.Parse("fc00::/7");
+
+		var lanList = NetworkInterface
+				.GetAllNetworkInterfaces()
 				.Where(nic => nic.OperationalStatus == OperationalStatus.Up)
 				.SelectMany(nic => nic.GetIPProperties().UnicastAddresses)
-				.Where(ip => ip.Address.AddressFamily == AddressFamily.InterNetwork &&
-										 !IPAddress.IsLoopback(ip.Address))
-				.FirstOrDefault()?.Address.ToString() ?? "127.0.0.1";
+				.Select(u => u.Address)
+				.Where(ip => !IPAddress.IsLoopback(ip))
+				.Where(ip => ip.IsLan())          // <-- 只保留局域网地址
+				.Select(ip => ip.ToString())
+				.ToArray();
+
+		string port = Duqu("server", "port");
+
+		if (lanList.Length == 0)
+		{
+			ip = $"http://127.0.0.1:{port}/";
+			return;
+		}
+
+		var lanIP = lanList[GetLanIPAddress_1 % lanList.Length];
+		ip = lanIP.Contains(':')
+				? $"http://[{lanIP}]:{port}/"
+				: $"http://{lanIP}:{port}/";
+
+		GetLanIPAddress_1++;
 	}
 
 	public override void _ExitTree()
@@ -425,3 +455,38 @@ public partial class Receiver : Node
 
 }
 
+#pragma warning disable CA1050 // 在命名空间中声明类型
+
+public static class IPExt
+#pragma warning restore CA1050 // 在命名空间中声明类型
+
+{
+	public static bool IsLan(this IPAddress ip)
+	{
+		if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+			return IsIPv4Private(ip);
+
+		if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
+			return IsIPv6Ula(ip);
+
+		return false;
+	}
+
+	private static bool IsIPv4Private(IPAddress ip)
+	{
+		var b = ip.GetAddressBytes();
+		uint addr = (uint)((b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]);
+
+		return
+				(addr & 0xFF000000) == 0x0A000000 ||   // 10.0.0.0/8
+				(addr & 0xFFF00000) == 0xAC100000 ||   // 172.16.0.0/12
+				(addr & 0xFFFF0000) == 0xC0A80000;     // 192.168.0.0/16
+	}
+
+	private static bool IsIPv6Ula(IPAddress ip)
+	{
+		// ULA = fc00::/7  -> 首字节高 7 位 = 1111 110x
+		var b = ip.GetAddressBytes();
+		return (b[0] & 0xFE) == 0xFC;
+	}
+}
